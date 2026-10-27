@@ -1,38 +1,79 @@
-# Como apresentar o projeto
+# Estudo de caso — entregas e satisfação no e-commerce
 
-## Demonstração em três minutos
+## Contexto
 
-1. **Problema:** explicar por que entregas e avaliações importam para o e-commerce. Mostrar que os dados são públicos e históricos.
-2. **Painel:** escolher um estado e período e mostrar a mudança dos indicadores.
-3. **Pergunta:** consultar a taxa de atraso, abrir as evidências e explicar o denominador. Comparar maior quantidade com maior taxa por estado.
-4. **Modelo:** classificar uma avaliação nova. Explicar TF-IDF, regressão logística e a separação dos dados antes de interpretar a métrica.
-5. **Limites:** dizer que é um projeto acadêmico, que a consulta local usa regras e que o modo generativo depende de configuração e avaliação com um provedor real.
+O dataset público da Olist reúne pedidos, itens, clientes e avaliações do e-commerce brasileiro. O projeto transforma essas tabelas em indicadores exploráveis e conecta a análise operacional a um modelo de classificação de avaliações.
 
-## Descrição factual para o portfólio
+## Problema
 
-Projeto acadêmico de análise de e-commerce com dados públicos da Olist. Inclui preparação de dados em Python, consultas SQL, painel interativo de entregas e satisfação, classificação de avaliações com TF-IDF e regressão logística e integração opcional com LLM para redigir respostas a partir de indicadores agregados. A extensão foi implementada com apoio de IA, com testes e documentação dos critérios e limitações.
+A análise de atrasos e satisfação exige cuidado com a estrutura dos dados: um pedido pode conter vários itens e mais de uma avaliação. Junções sem agregação podem multiplicar registros e distorcer as métricas.
 
-Antes de usar o texto em uma candidatura, execute o projeto e ajuste a descrição ao que efetivamente revisou, compreende e consegue demonstrar. Ele não comprova implantação em empresa, usuários em produção, orquestração de múltiplos agentes ou economia de horas.
+A solução mantém um registro por pedido, explicita os denominadores e permite investigar diferenças por estado e período.
 
-## Perguntas para estudar
+## Solução implementada
 
-- Por que somar itens antes de juntá-los com pedidos? O que aconteceria se um pedido tivesse várias cópias de sua avaliação?
-- Por que um pedido sem data de entrega não deve ser contado como pontual?
-- Qual a diferença entre comparar o dia previsto e o horário exato da entrega?
-- Qual a diferença entre quantidade de atrasos e taxa de atraso?
-- Por que deduplicar os textos antes da divisão treino/teste?
-- Como TF-IDF representa o texto? O que a regressão logística aprende?
-- O que o F1 macro acrescenta em relação à acurácia? Por que comparar com um baseline?
-- Por que a nota é um rótulo imperfeito para sentimento?
-- Que dados seguem para o LLM? Como conferir uma resposta errada?
-- Por que a consulta local não deve ser chamada de agente generativo?
+- **Preparação em Python:** validação das junções, agregação de itens e seleção de uma avaliação por pedido.
+- **Indicadores e SQL:** volume de compras, taxa de atraso, nota média, valor dos itens e comparações por estado e mês.
+- **Painel interativo:** filtros de data e estado, gráficos, tabelas e exportação de indicadores.
+- **Classificação de avaliações:** TF-IDF e regressão logística com separação de treino/teste e comparação com baseline.
+- **Consulta com evidências:** respostas locais vinculadas aos indicadores M1–M4 e integração generativa opcional para redigir respostas a partir dos mesmos agregados.
 
-## Próximos passos ainda não concluídos
+## Decisões de implementação
 
-- Avaliar o modo generativo com os casos de PROMPTS.md, registrando modelo, custo e erros reais.
-- Publicar uma demonstração na hospedagem escolhida pelo autor e configurar segredos apenas no servidor.
-- Adicionar validação temporal e análise de erros do classificador.
-- Testar o painel com pessoas e registrar feedback real.
-- Havendo um processo manual real a substituir, medir o tempo antes e depois. Até lá, não declarar economia de horas.
+| Decisão | Motivo |
+| --- | --- |
+| Agregar itens antes de unir as tabelas | Preservar a contagem de pedidos e evitar duplicação de valores. |
+| Comparar o dia previsto e o dia de entrega | Definir o atraso por calendário, incluindo o dia previsto como prazo válido. |
+| Excluir entregas sem datas válidas do denominador | Evitar classificar registros incompletos como pontuais. |
+| Separar quantidade e taxa de atrasos | Distinguir volume operacional de proporção de entregas atrasadas. |
+| Deduplicar textos antes de separar treino/teste | Reduzir vazamento de textos idênticos entre as partições. |
+| Comparar o classificador com uma previsão majoritária | Avaliar o ganho em relação a uma referência simples. |
+| Usar consultas SQL fixas e evidências agregadas | Tornar os cálculos rastreáveis e evitar executar código gerado pelo modelo. |
 
-Este repositório é independente de outros projetos pessoais e não requer divulgá-los.
+## Resultados técnicos
+
+Execução de referência com os dados do repositório:
+
+| Indicador | Resultado |
+| --- | ---: |
+| Pedidos únicos | 99.441 |
+| Entregas válidas para análise de atraso | 96.470 |
+| Entregas após o dia previsto | 6.534 |
+| Taxa de atraso | 6,7731% |
+| Textos únicos usados no classificador | 30.475 |
+| Textos reservados para teste | 6.095 |
+| Acurácia no teste | 0,9229 |
+| F1 macro no teste | 0,9152 |
+| F1 macro do baseline majoritário | 0,4004 |
+
+A avaliação usa divisão aleatória estratificada com semente 42. Os resultados descrevem esse protocolo e devem ser interpretados com os critérios da [metodologia](METODOLOGIA.md). Os valores e agregados podem ser conferidos no [relatório de referência](../reports/portfolio/example_results.json).
+
+## Fluxo de uso
+
+1. Selecionar um período de compra e os estados de interesse.
+2. Comparar volume, atraso e notas na visão dos pedidos.
+3. Consultar uma pergunta e conferir as evidências usadas na resposta.
+4. Inserir uma avaliação nova no classificador e analisar a classe estimada e o escore.
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    A[CSVs públicos da Olist] --> B[Preparação e validação]
+    B --> C[Indicadores Python e SQL]
+    C --> D[Painel Streamlit]
+    C --> E[Consulta com evidências]
+    E --> F[Redação generativa opcional]
+    A --> G[Preparação dos textos]
+    G --> H[TF-IDF e regressão logística]
+    H --> I[Classificação de novas avaliações]
+```
+
+## Documentação técnica
+
+- [Instalação e execução](../README.md#instalação-e-execução)
+- [Metodologia e avaliação](METODOLOGIA.md)
+- [Funcionamento do assistente e plano de avaliação generativa](PROMPTS.md)
+- [Testes automatizados](../tests/)
+
+O projeto tem origem acadêmica e utiliza dados históricos públicos. A integração generativa é opcional; seus testes de contrato e requisitos de configuração estão descritos na documentação técnica.
