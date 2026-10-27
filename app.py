@@ -187,5 +187,5 @@ with method:
 3. **Consulta:** no modo local, regras selecionam a resposta. No modo generativo, a pergunta e agregados seguem para o LLM, sem identificadores ou textos de clientes.
 4. **Classificação:** textos normalizados são deduplicados antes de dividir treino/teste; textos idênticos com rótulos conflitantes são retirados. O teste compara o modelo com uma previsão majoritária.
 """)
-    st.info("Projeto acadêmico demonstrável. Não há implantação em empresa, uso por clientes ou economia de horas comprovada.")
-    st.markdown("Os códigos acadêmicos originais permanecem em `src/` e `notebooks/`. Veja no GitHub a documentação da extensão, os testes e o roteiro de apresentação.")
+    st.info("Estudo de e-commerce com dados públicos históricos da Olist. A metodologia documenta os critérios de cálculo dos indicadores e de avaliação das previsões.")
+    st.markdown("O repositório reúne o estudo de caso, a metodologia, os testes e os códigos de análise em `src/` e `notebooks/`.")
