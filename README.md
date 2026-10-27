@@ -1,16 +1,16 @@
 # Olist — entregas, satisfação e IA aplicada
 
-Projeto acadêmico em Python sobre o e-commerce brasileiro: da análise exploratória e classificação de avaliações a um painel interativo com consultas em linguagem natural.
+Projeto em Python que combina análise de e-commerce, classificação de avaliações e um painel interativo para explorar entregas e satisfação do cliente com dados públicos da Olist.
 
-**Executar a demonstração:** `python -m streamlit run app.py` · [Roteiro de apresentação](docs/PORTFOLIO.md) · [Metodologia](docs/METODOLOGIA.md)
+**Abrir o painel:** `python -m streamlit run app.py` · [Estudo de caso](docs/PORTFOLIO.md) · [Metodologia](docs/METODOLOGIA.md)
 
-## Problema e demonstração
+## Problema e solução
 
 Como explorar a relação entre atrasos de entrega e satisfação sem confundir quantidade de pedidos, número de itens e avaliações repetidas?
 
 O painel permite filtrar período e estados, comparar indicadores e consultar suas evidências. Também há um classificador para testar avaliações novas. A consulta local funciona sem API; o modo generativo é uma integração opcional, configurada no servidor.
 
-| Parte | O que é demonstrável |
+| Componente | Funcionalidades |
 | --- | --- |
 | Dados e SQL | Junções validadas, um registro por pedido, indicadores e consultas SQL por estado, mês e nota. |
 | Aprendizado de máquina | TF-IDF + regressão logística, inferência de texto novo e comparação com baseline. |
@@ -76,7 +76,7 @@ python -m streamlit run app.py
 
 No painel, selecione **IA generativa (OpenAI)** e confirme o envio da pergunta e dos agregados. A chamada pode consumir créditos da API. O cliente envia store=False e não transmite identificadores, comentários de clientes ou os CSVs. Isso não implica ausência de toda retenção pelo provedor. Consulte o [prompt e seus limites](docs/PROMPTS.md).
 
-O contrato da integração generativa foi testado com um cliente simulado. **Não houve chamada real à API nem avaliação da qualidade das respostas de um modelo externo nesta entrega.** A consulta local e o classificador foram executados com os dados reais do repositório.
+**Validação:** painel, consulta local e classificador executados com os dados do repositório. A integração generativa é coberta por testes de contrato com cliente simulado; a avaliação com um modelo externo depende da configuração de credenciais e de testes específicos, descritos na [documentação do assistente](docs/PROMPTS.md).
 
 ## Avaliação reproduzível
 
@@ -114,15 +114,15 @@ olist_insights/
   sentiment.py           # Treino, avaliação e inferência
   __main__.py            # Relatório reexecutável e treino opcional
 tests/                   # Testes de dados, consultas, modelo e painel
-docs/                    # Metodologia, prompts e demonstração
+docs/                    # Estudo de caso, metodologia e prompts
 src/                     # Scripts acadêmicos originais de NLP/modelo
 notebooks/               # Análise exploratória original
 reports/                 # Gráficos originais e relatório demonstrativo
 data/raw/                # Dataset público
 ```
 
-## Escopo e autoria
+## Sobre o projeto
 
-O estudo original foi desenvolvido para a disciplina Projeto Aplicado II do curso de Ciência de Dados. A extensão acrescenta interface, consultas rastreáveis, avaliação reproduzível e testes, com apoio de IA na implementação e revisão. Os scripts originais foram preservados.
+O projeto surgiu na disciplina Projeto Aplicado II do curso de Ciência de Dados e evoluiu para uma aplicação interativa de análise de e-commerce. Reúne preparação de dados, consultas SQL, classificação de avaliações, respostas com evidências e testes automatizados, com apoio de IA no desenvolvimento.
 
-É um **projeto acadêmico demonstrável**, sem implantação em empresa, usuários de produção ou economia de horas comprovada. Não é um sistema autônomo de múltiplos agentes. Para uma entrevista, execute a demonstração e revise os critérios técnicos do [roteiro](docs/PORTFOLIO.md).
+O [estudo de caso](docs/PORTFOLIO.md) apresenta o problema, as decisões de implementação e os resultados. A [metodologia](docs/METODOLOGIA.md) documenta os critérios de cálculo e de avaliação dos modelos.
