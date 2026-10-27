@@ -1,0 +1,528 @@
+{
+  "evidencias": {
+    "M1": {
+      "fonte": "Pedidos únicos no recorte; métricas calculadas em Python",
+      "dados": {
+        "pedidos": 99441,
+        "entregas_validas": 96470,
+        "fora_do_calculo_de_atraso": 2971,
+        "atrasados": 6534,
+        "atraso_pct": 6.7731,
+        "nota_media": 4.0864,
+        "pedidos_avaliados": 98673,
+        "valor_itens_brl": 13591643.7,
+        "ticket_itens_brl": 137.7541,
+        "pedidos_com_valor_itens": 98666,
+        "dias_entrega_media": 12.4968,
+        "inicio": "2016-09-04",
+        "fim": "2018-10-17",
+        "estados": [
+          "AC",
+          "AL",
+          "AM",
+          "AP",
+          "BA",
+          "CE",
+          "DF",
+          "ES",
+          "GO",
+          "MA",
+          "MG",
+          "MS",
+          "MT",
+          "PA",
+          "PB",
+          "PE",
+          "PI",
+          "PR",
+          "RJ",
+          "RN",
+          "RO",
+          "RR",
+          "RS",
+          "SC",
+          "SE",
+          "SP",
+          "TO"
+        ]
+      }
+    },
+    "M2": {
+      "fonte": "SQL por estado",
+      "dados": [
+        {
+          "estado": "SP",
+          "pedidos": 41746,
+          "entregas_validas": 40494,
+          "atrasados": 1820,
+          "atraso_pct": 4.49,
+          "nota_media": 4.17
+        },
+        {
+          "estado": "RJ",
+          "pedidos": 12852,
+          "entregas_validas": 12350,
+          "atrasados": 1495,
+          "atraso_pct": 12.11,
+          "nota_media": 3.88
+        },
+        {
+          "estado": "MG",
+          "pedidos": 11635,
+          "entregas_validas": 11354,
+          "atrasados": 519,
+          "atraso_pct": 4.57,
+          "nota_media": 4.14
+        },
+        {
+          "estado": "RS",
+          "pedidos": 5466,
+          "entregas_validas": 5344,
+          "atrasados": 325,
+          "atraso_pct": 6.08,
+          "nota_media": 4.13
+        },
+        {
+          "estado": "PR",
+          "pedidos": 5045,
+          "entregas_validas": 4923,
+          "atrasados": 199,
+          "atraso_pct": 4.04,
+          "nota_media": 4.18
+        },
+        {
+          "estado": "SC",
+          "pedidos": 3637,
+          "entregas_validas": 3546,
+          "atrasados": 291,
+          "atraso_pct": 8.21,
+          "nota_media": 4.07
+        },
+        {
+          "estado": "BA",
+          "pedidos": 3380,
+          "entregas_validas": 3256,
+          "atrasados": 396,
+          "atraso_pct": 12.16,
+          "nota_media": 3.86
+        },
+        {
+          "estado": "DF",
+          "pedidos": 2140,
+          "entregas_validas": 2080,
+          "atrasados": 118,
+          "atraso_pct": 5.67,
+          "nota_media": 4.06
+        },
+        {
+          "estado": "ES",
+          "pedidos": 2033,
+          "entregas_validas": 1995,
+          "atrasados": 214,
+          "atraso_pct": 10.73,
+          "nota_media": 4.04
+        },
+        {
+          "estado": "GO",
+          "pedidos": 2020,
+          "entregas_validas": 1957,
+          "atrasados": 128,
+          "atraso_pct": 6.54,
+          "nota_media": 4.04
+        },
+        {
+          "estado": "PE",
+          "pedidos": 1652,
+          "entregas_validas": 1593,
+          "atrasados": 153,
+          "atraso_pct": 9.6,
+          "nota_media": 4.01
+        },
+        {
+          "estado": "CE",
+          "pedidos": 1336,
+          "entregas_validas": 1279,
+          "atrasados": 176,
+          "atraso_pct": 13.76,
+          "nota_media": 3.86
+        },
+        {
+          "estado": "PA",
+          "pedidos": 975,
+          "entregas_validas": 946,
+          "atrasados": 106,
+          "atraso_pct": 11.21,
+          "nota_media": 3.85
+        },
+        {
+          "estado": "MT",
+          "pedidos": 907,
+          "entregas_validas": 886,
+          "atrasados": 53,
+          "atraso_pct": 5.98,
+          "nota_media": 4.1
+        },
+        {
+          "estado": "MA",
+          "pedidos": 747,
+          "entregas_validas": 717,
+          "atrasados": 125,
+          "atraso_pct": 17.43,
+          "nota_media": 3.76
+        },
+        {
+          "estado": "MS",
+          "pedidos": 715,
+          "entregas_validas": 701,
+          "atrasados": 68,
+          "atraso_pct": 9.7,
+          "nota_media": 4.11
+        },
+        {
+          "estado": "PB",
+          "pedidos": 536,
+          "entregas_validas": 517,
+          "atrasados": 54,
+          "atraso_pct": 10.44,
+          "nota_media": 4.02
+        },
+        {
+          "estado": "PI",
+          "pedidos": 495,
+          "entregas_validas": 476,
+          "atrasados": 66,
+          "atraso_pct": 13.87,
+          "nota_media": 3.92
+        },
+        {
+          "estado": "RN",
+          "pedidos": 485,
+          "entregas_validas": 474,
+          "atrasados": 44,
+          "atraso_pct": 9.28,
+          "nota_media": 4.11
+        },
+        {
+          "estado": "AL",
+          "pedidos": 413,
+          "entregas_validas": 397,
+          "atrasados": 85,
+          "atraso_pct": 21.41,
+          "nota_media": 3.76
+        },
+        {
+          "estado": "SE",
+          "pedidos": 350,
+          "entregas_validas": 335,
+          "atrasados": 51,
+          "atraso_pct": 15.22,
+          "nota_media": 3.81
+        },
+        {
+          "estado": "TO",
+          "pedidos": 280,
+          "entregas_validas": 274,
+          "atrasados": 27,
+          "atraso_pct": 9.85,
+          "nota_media": 4.1
+        },
+        {
+          "estado": "RO",
+          "pedidos": 253,
+          "entregas_validas": 243,
+          "atrasados": 7,
+          "atraso_pct": 2.88,
+          "nota_media": 4.05
+        },
+        {
+          "estado": "AM",
+          "pedidos": 148,
+          "entregas_validas": 145,
+          "atrasados": 4,
+          "atraso_pct": 2.76,
+          "nota_media": 4.21
+        },
+        {
+          "estado": "AC",
+          "pedidos": 81,
+          "entregas_validas": 80,
+          "atrasados": 3,
+          "atraso_pct": 3.75,
+          "nota_media": 4.05
+        },
+        {
+          "estado": "AP",
+          "pedidos": 68,
+          "entregas_validas": 67,
+          "atrasados": 2,
+          "atraso_pct": 2.99,
+          "nota_media": 4.19
+        },
+        {
+          "estado": "RR",
+          "pedidos": 46,
+          "entregas_validas": 41,
+          "atrasados": 5,
+          "atraso_pct": 12.2,
+          "nota_media": 3.61
+        }
+      ]
+    },
+    "M3": {
+      "fonte": "SQL por mês da compra",
+      "dados": [
+        {
+          "mes": "2016-09",
+          "pedidos": 4,
+          "entregas_validas": 1,
+          "atrasados": 1.0,
+          "atraso_pct": 100.0
+        },
+        {
+          "mes": "2016-10",
+          "pedidos": 324,
+          "entregas_validas": 265,
+          "atrasados": 2.0,
+          "atraso_pct": 0.75
+        },
+        {
+          "mes": "2016-12",
+          "pedidos": 1,
+          "entregas_validas": 1,
+          "atrasados": 0.0,
+          "atraso_pct": 0.0
+        },
+        {
+          "mes": "2017-01",
+          "pedidos": 800,
+          "entregas_validas": 750,
+          "atrasados": 22.0,
+          "atraso_pct": 2.93
+        },
+        {
+          "mes": "2017-02",
+          "pedidos": 1780,
+          "entregas_validas": 1653,
+          "atrasados": 49.0,
+          "atraso_pct": 2.96
+        },
+        {
+          "mes": "2017-03",
+          "pedidos": 2682,
+          "entregas_validas": 2546,
+          "atrasados": 116.0,
+          "atraso_pct": 4.56
+        },
+        {
+          "mes": "2017-04",
+          "pedidos": 2404,
+          "entregas_validas": 2303,
+          "atrasados": 151.0,
+          "atraso_pct": 6.56
+        },
+        {
+          "mes": "2017-05",
+          "pedidos": 3700,
+          "entregas_validas": 3545,
+          "atrasados": 106.0,
+          "atraso_pct": 2.99
+        },
+        {
+          "mes": "2017-06",
+          "pedidos": 3245,
+          "entregas_validas": 3135,
+          "atrasados": 95.0,
+          "atraso_pct": 3.03
+        },
+        {
+          "mes": "2017-07",
+          "pedidos": 4026,
+          "entregas_validas": 3872,
+          "atrasados": 108.0,
+          "atraso_pct": 2.79
+        },
+        {
+          "mes": "2017-08",
+          "pedidos": 4331,
+          "entregas_validas": 4193,
+          "atrasados": 122.0,
+          "atraso_pct": 2.91
+        },
+        {
+          "mes": "2017-09",
+          "pedidos": 4285,
+          "entregas_validas": 4150,
+          "atrasados": 182.0,
+          "atraso_pct": 4.39
+        },
+        {
+          "mes": "2017-10",
+          "pedidos": 4631,
+          "entregas_validas": 4478,
+          "atrasados": 187.0,
+          "atraso_pct": 4.18
+        },
+        {
+          "mes": "2017-11",
+          "pedidos": 7544,
+          "entregas_validas": 7288,
+          "atrasados": 904.0,
+          "atraso_pct": 12.4
+        },
+        {
+          "mes": "2017-12",
+          "pedidos": 5673,
+          "entregas_validas": 5513,
+          "atrasados": 411.0,
+          "atraso_pct": 7.46
+        },
+        {
+          "mes": "2018-01",
+          "pedidos": 7269,
+          "entregas_validas": 7069,
+          "atrasados": 403.0,
+          "atraso_pct": 5.7
+        },
+        {
+          "mes": "2018-02",
+          "pedidos": 6728,
+          "entregas_validas": 6555,
+          "atrasados": 926.0,
+          "atraso_pct": 14.13
+        },
+        {
+          "mes": "2018-03",
+          "pedidos": 7211,
+          "entregas_validas": 7003,
+          "atrasados": 1328.0,
+          "atraso_pct": 18.96
+        },
+        {
+          "mes": "2018-04",
+          "pedidos": 6939,
+          "entregas_validas": 6798,
+          "atrasados": 306.0,
+          "atraso_pct": 4.5
+        },
+        {
+          "mes": "2018-05",
+          "pedidos": 6873,
+          "entregas_validas": 6749,
+          "atrasados": 443.0,
+          "atraso_pct": 6.56
+        },
+        {
+          "mes": "2018-06",
+          "pedidos": 6167,
+          "entregas_validas": 6096,
+          "atrasados": 71.0,
+          "atraso_pct": 1.16
+        },
+        {
+          "mes": "2018-07",
+          "pedidos": 6292,
+          "entregas_validas": 6156,
+          "atrasados": 208.0,
+          "atraso_pct": 3.38
+        },
+        {
+          "mes": "2018-08",
+          "pedidos": 6512,
+          "entregas_validas": 6351,
+          "atrasados": 393.0,
+          "atraso_pct": 6.19
+        },
+        {
+          "mes": "2018-09",
+          "pedidos": 16,
+          "entregas_validas": 0,
+          "atrasados": null,
+          "atraso_pct": null
+        },
+        {
+          "mes": "2018-10",
+          "pedidos": 4,
+          "entregas_validas": 0,
+          "atrasados": null,
+          "atraso_pct": null
+        }
+      ]
+    },
+    "M4": {
+      "fonte": "SQL: entrega e nota, só pedidos avaliados com entrega válida",
+      "dados": [
+        {
+          "entrega": "No prazo",
+          "pedidos_avaliados": 89443,
+          "nota_media": 4.29
+        },
+        {
+          "entrega": "Atrasado",
+          "pedidos_avaliados": 6381,
+          "nota_media": 2.27
+        }
+      ]
+    },
+    "regras": [
+      "Atraso: entrega após o dia previsto, só entregas com datas válidas.",
+      "Uma avaliação por pedido: resposta mais recente; desempate por review_id.",
+      "Valor de itens não inclui frete e não equivale a lucro ou receita reconhecida.",
+      "Associação entre atraso e nota não demonstra causalidade.",
+      "Dados históricos públicos da Olist; não descrevem a operação atual de nenhuma empresa."
+    ]
+  },
+  "classificador": {
+    "amostras_antes_da_limpeza": 99224,
+    "textos_unicos_utilizados": 30475,
+    "treino": 24380,
+    "teste": 6095,
+    "seed": 42,
+    "acuracia": 0.9229,
+    "f1_macro": 0.9152,
+    "baseline_f1_macro": 0.4004,
+    "classes": [
+      "negativa",
+      "positiva"
+    ],
+    "matriz_confusao": [
+      [
+        1896,
+        129
+      ],
+      [
+        341,
+        3729
+      ]
+    ],
+    "por_classe": {
+      "negativa": {
+        "precision": 0.8475637013857845,
+        "recall": 0.9362962962962963,
+        "f1-score": 0.8897231346785547,
+        "support": 2025.0
+      },
+      "positiva": {
+        "precision": 0.9665629860031104,
+        "recall": 0.9162162162162162,
+        "f1-score": 0.9407164480322906,
+        "support": 4070.0
+      },
+      "accuracy": 0.9228876127973749,
+      "macro avg": {
+        "precision": 0.9070633436944475,
+        "recall": 0.9262562562562562,
+        "f1-score": 0.9152197913554226,
+        "support": 6095.0
+      },
+      "weighted avg": {
+        "precision": 0.9270267183492819,
+        "recall": 0.9228876127973749,
+        "f1-score": 0.9237744530296139,
+        "support": 6095.0
+      }
+    },
+    "limitacoes": "Avaliação aleatória em dados históricos. Não valida generalização temporal. Notas são rótulos aproximados de sentimento; nota 3 foi excluída."
+  },
+  "tempo_execucao_segundos": 8.943,
+  "impacto": "Tempo de execução medido nesta máquina. Economia de horas de trabalho não foi medida."
+}
