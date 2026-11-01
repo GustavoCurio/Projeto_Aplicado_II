@@ -15,17 +15,20 @@ ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data" / "raw"
 MODEL_PATH = ROOT / "models" / "reviews.joblib"
 
-st.set_page_config(page_title="Olist | Entregas & experiência", page_icon="📦", layout="wide")
+st.set_page_config(page_title="Olist · Commerce Analytics", page_icon="📦", layout="wide")
 st.markdown("""<style>
-    .stApp {background: #f5f7fa;}
-    [data-testid="stSidebar"] {background: #eaf0f5;}
-    [data-testid="stMetric"] {background: white; border-radius: 12px;}
-    .eyebrow {color:#087f8c;font-size:13px;font-weight:700;letter-spacing:2px;}
-    .subtitle {color:#526477;font-size:17px;max-width:850px;}
-    h1, h2, h3 {color:#17324d;}
-    .block-container {padding-top:4rem;}
+.stApp{background:#0d1424;color:#dce5f3}
+.block-container{padding-top:3.6rem;max-width:1600px}
+h1,h2,h3{color:#f0f4fc;letter-spacing:-.035em}
+h1{font-size:2rem!important;padding:.25rem 0!important}\n.block-container [data-testid="stVerticalBlock"]{gap:.65rem}\n.block-container hr{margin:.3rem 0}h3{font-size:1.18rem!important}
+.terminal-brand{font-family:monospace;font-size:12px;letter-spacing:3px;color:#6de1b7}
+.subtitle{color:#97a7bd;font-size:15px}
+[data-testid="stMetric"]{background:#141f32;border:0;border-left:3px solid #6de1b7;border-radius:0;padding:8px 14px}
+[data-testid="stMetricValue"]{color:#f2f5fb;font-size:26px}
+[data-testid="stMetricLabel"]{color:#9caec6}
+[data-testid="stVerticalBlockBorderWrapper"]{border-color:#29364e!important}
+div[data-testid="stRadio"] [role="radiogroup"]{gap:25px}
 </style>""", unsafe_allow_html=True)
-
 
 @st.cache_data(show_spinner=False)
 def cached_orders():
@@ -44,21 +47,19 @@ if valid_dates.empty:
     st.error("Não há datas de compra válidas na base.")
     st.stop()
 
-with st.sidebar:
-    st.markdown("### Seu recorte")
-    st.caption("Os filtros valem para os indicadores e para as respostas do assistente.")
-    dates = st.date_input("Período da compra", value=(valid_dates.min().date(), valid_dates.max().date()),
-                          min_value=valid_dates.min().date(), max_value=valid_dates.max().date())
-    states = st.multiselect("Estados", options=sorted(orders["customer_state"].unique()),
-                            default=sorted(orders["customer_state"].unique()))
-    st.divider()
-    st.markdown("**Dataset público da Olist**")
-    st.caption("Estudo acadêmico com dados históricos. Sem conexão com operações em tempo real.")
-    st.link_button("Ver o projeto no GitHub", "https://github.com/GustavoCurio/Projeto_Aplicado_II")
-
-st.markdown('<div class="eyebrow">OLIST · LABORATÓRIO DE DADOS</div>', unsafe_allow_html=True)
-st.title("Da entrega à experiência do cliente")
-st.markdown('<p class="subtitle">Explore os pedidos, investigue atrasos e consulte os indicadores com evidências. Um projeto acadêmico de dados, aprendizado de máquina e IA generativa opcional.</p>', unsafe_allow_html=True)
+st.markdown('<div class="terminal-brand">OLIST / COMMERCE ANALYTICS</div>', unsafe_allow_html=True)
+heading, repo = st.columns([4,1])
+heading.title("Panorama da operação")
+repo.link_button("Repositório ↗", "https://github.com/GustavoCurio/Projeto_Aplicado_II")
+st.markdown('<p class="subtitle">Pedidos, entregas e satisfação · análise histórica de e-commerce</p>', unsafe_allow_html=True)
+with st.container(border=True):
+    period, geography = st.columns([1, 2])
+    with period:
+        dates = st.date_input("Período da compra", value=(valid_dates.min().date(), valid_dates.max().date()),
+                              min_value=valid_dates.min().date(), max_value=valid_dates.max().date())
+    with geography:
+        states = st.multiselect("Estados", options=sorted(orders["customer_state"].unique()),
+                                default=sorted(orders["customer_state"].unique()))
 if len(dates) != 2:
     st.info("Selecione a data inicial e a final do período.")
     st.stop()
@@ -70,42 +71,60 @@ if selected.empty:
     st.stop()
 
 columns = st.columns(4)
-columns[0].metric("Pedidos únicos", f"{metrics['pedidos']:,}".replace(",", "."), border=True)
-columns[1].metric("Entregas com atraso", f"{number(metrics['atraso_pct'])}%" if metrics["atraso_pct"] is not None else "Sem dados", border=True)
-columns[2].metric("Nota média", f"{number(metrics['nota_media'])} / 5" if metrics["nota_media"] is not None else "Sem dados", border=True)
-columns[3].metric("Valor dos itens", f"R$ {number(metrics['valor_itens_brl'], 0)}" if metrics["valor_itens_brl"] is not None else "Sem dados", border=True)
+columns[0].metric("Pedidos únicos", f"{metrics['pedidos']:,}".replace(",", "."))
+columns[1].metric("Entregas com atraso", f"{number(metrics['atraso_pct'])}%" if metrics["atraso_pct"] is not None else "Sem dados")
+columns[2].metric("Nota média", f"{number(metrics['nota_media'])} / 5" if metrics["nota_media"] is not None else "Sem dados")
+columns[3].metric("Valor dos itens", f"R$ {number(metrics['valor_itens_brl'], 0)}" if metrics["valor_itens_brl"] is not None else "Sem dados")
 st.caption(f"Atraso: {metrics['atrasados']} de {metrics['entregas_validas']} entregas válidas. Nota: {metrics['pedidos_avaliados']} pedidos avaliados. Valor dos itens exclui frete; não representa lucro.")
 
-overview, assistant, classifier, method = st.tabs(["Visão dos pedidos", "Pergunte aos dados", "Teste o classificador", "Como foi construído"])
+view = st.radio("Área de análise", ["Operação", "Pergunte aos dados", "Teste o classificador", "Como foi construído"], horizontal=True, label_visibility="collapsed")
+st.divider()
 tables = query_tables(selected)
-with overview:
-    left, right = st.columns([1.2, 1])
+if view == "Operação":
+    st.subheader("Pulso das compras")
+    monthly = tables["monthly"]
+    volume = alt.Chart(monthly).mark_area(
+        line={"color":"#6de1b7","strokeWidth":2.5},
+        color=alt.Gradient(gradient="linear", stops=[alt.GradientStop(color="#6de1b7",offset=0),alt.GradientStop(color="#0d1424",offset=1)], x1=1,x2=1,y1=0,y2=1)
+    ).encode(
+        x=alt.X("mes:N",title=None,axis=alt.Axis(labelAngle=-45,labelColor="#95a7c0",tickCount=12)),
+        y=alt.Y("pedidos:Q",title="Pedidos",axis=alt.Axis(labelColor="#95a7c0",titleColor="#95a7c0",gridColor="#243149")),
+        tooltip=["mes","pedidos","atrasados","atraso_pct"]
+    ).properties(height=310,background="#0d1424").configure_view(strokeWidth=0)
+    st.altair_chart(volume, width="stretch")
+    st.caption("Contagem por mês da compra. Os meses nas bordas do período podem estar incompletos.")
+    left, right = st.columns([1.25,1],gap="large")
     with left:
-        st.subheader("Volume de compras ao longo do tempo")
-        st.line_chart(tables["monthly"].set_index("mes")[["pedidos"]], color="#087f8c", height=270)
-        st.caption("Contagem por mês da compra. Meses nas bordas do período podem estar incompletos.")
-    with right:
-        st.subheader("Onde investigar os atrasos")
+        st.subheader("Atrasos por estado")
         ranked = tables["states"].loc[tables["states"]["entregas_validas"].ge(20)].sort_values("atraso_pct", ascending=False).head(10)
         if ranked.empty:
             st.info("Não há estado com pelo menos 20 entregas válidas neste recorte.")
         else:
-            chart = alt.Chart(ranked).mark_bar(color="#087f8c", cornerRadiusEnd=3).encode(
-                x=alt.X("atraso_pct:Q", title="Entregas com atraso (%)"),
-                y=alt.Y("estado:N", sort="-x", title=None),
-                tooltip=["estado", "entregas_validas", "atrasados", "atraso_pct"],
-            ).properties(height=270)
-            st.altair_chart(chart, width="stretch")
-        st.caption("Até 10 maiores taxas; mínimo de 20 entregas válidas por estado. Volumes diferentes exigem cuidado na comparação.")
-    st.subheader("Entregas e avaliações")
-    st.dataframe(tables["satisfaction"], hide_index=True, width="stretch")
-    st.caption("Uma avaliação por pedido. A associação entre atraso e nota não prova causalidade.")
+            chart = alt.Chart(ranked).mark_bar(color="#f3ad69",cornerRadiusEnd=3).encode(
+                x=alt.X("atraso_pct:Q",title="Entregas com atraso (%)",axis=alt.Axis(labelColor="#95a7c0",titleColor="#95a7c0",gridColor="#243149")),
+                y=alt.Y("estado:N",sort="-x",title=None,axis=alt.Axis(labelColor="#dce5f3")),
+                tooltip=["estado","entregas_validas","atrasados","atraso_pct"]
+            ).properties(height=280,background="#0d1424").configure_view(strokeWidth=0)
+            st.altair_chart(chart,width="stretch")
+        st.caption("10 maiores taxas · mínimo de 20 entregas válidas por estado.")
+    with right:
+        st.subheader("A entrega aparece na avaliação?")
+        satisfaction = tables["satisfaction"]
+        score = alt.Chart(satisfaction).mark_bar(size=48,cornerRadiusTopLeft=4,cornerRadiusTopRight=4).encode(
+            x=alt.X("entrega:N",title=None,axis=alt.Axis(labelAngle=0,labelColor="#dce5f3")),
+            y=alt.Y("nota_media:Q",scale=alt.Scale(domain=[0,5]),title="Nota média",axis=alt.Axis(labelColor="#95a7c0",titleColor="#95a7c0",gridColor="#243149")),
+            color=alt.Color("entrega:N",scale=alt.Scale(domain=["No prazo","Atrasado"],range=["#6de1b7","#f3ad69"]),legend=None),
+            tooltip=["entrega","pedidos_avaliados","nota_media"]
+        ).properties(height=230,background="#0d1424").configure_view(strokeWidth=0)
+        st.altair_chart(score,width="stretch")
+        st.caption("Uma avaliação por pedido. A associação entre atraso e nota não prova causalidade.")
+        with st.expander("Ver tabela de avaliações"):
+            st.dataframe(satisfaction,hide_index=True,width="stretch")
     with st.expander("Conferir os números por estado"):
-        st.dataframe(tables["states"], hide_index=True, width="stretch")
-    st.download_button("Baixar indicadores por estado (CSV)", tables["states"].to_csv(index=False).encode("utf-8-sig"),
-                       "olist_indicadores_estados.csv", mime="text/csv")
+        st.dataframe(tables["states"],hide_index=True,width="stretch")
+    st.download_button("Baixar indicadores por estado (CSV)",tables["states"].to_csv(index=False).encode("utf-8-sig"),"olist_indicadores_estados.csv",mime="text/csv")
 
-with assistant:
+if view == "Pergunte aos dados":
     st.subheader("Perguntas com números que você pode conferir")
     st.caption("Exemplos: Qual é a taxa de atraso? · Qual estado tem mais atrasos? · Como o atraso se relaciona com a nota? · Qual mês teve mais pedidos?")
     configured = bool(os.environ.get("OPENAI_API_KEY") and os.environ.get("OPENAI_MODEL"))
@@ -145,7 +164,7 @@ with assistant:
             st.json(answer.evidence)
     st.caption("A consulta local usa regras e SQL fixo. No modo generativo, o LLM redige a resposta a partir dos mesmos agregados; confira as evidências, pois ele pode errar. Nenhum comentário de cliente é enviado.")
 
-with classifier:
+if view == "Teste o classificador":
     st.subheader("Uma avaliação, duas classes")
     st.write("Modelo TF-IDF + regressão logística treinado para distinguir avaliações positivas e negativas. Notas 1–2 representam a classe negativa; 4–5, a positiva. Nota 3 não entra no treino.")
     st.caption("Este modelo usa a base histórica completa de avaliações; os filtros do painel não alteram o treinamento.")
@@ -179,7 +198,7 @@ with classifier:
     else:
         st.info("Treine o modelo pelo botão acima ou execute python -m olist_insights --train antes de abrir o painel.")
 
-with method:
+if view == "Como foi construído":
     st.subheader("Do CSV à resposta")
     st.markdown("""
 1. **Preparação:** pedidos e clientes são unidos com validação; itens são somados antes da junção. A avaliação mais recente representa cada pedido.
@@ -189,3 +208,6 @@ with method:
 """)
     st.info("Estudo de e-commerce com dados públicos históricos da Olist. A metodologia documenta os critérios de cálculo dos indicadores e de avaliação das previsões.")
     st.markdown("O repositório reúne o estudo de caso, a metodologia, os testes e os códigos de análise em `src/` e `notebooks/`.")
+
+st.divider()
+st.caption("Dataset público da Olist · estudo acadêmico com dados históricos · sem conexão com operações em tempo real.")

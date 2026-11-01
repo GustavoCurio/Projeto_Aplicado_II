@@ -1,128 +1,170 @@
-# Olist — entregas, satisfação e IA aplicada
+# Olist — Commerce Analytics
 
-Projeto em Python que combina análise de e-commerce, classificação de avaliações e um painel interativo para explorar entregas e satisfação do cliente com dados públicos da Olist.
+**Da entrega à experiência do cliente, com dados que você pode conferir.**
 
-**Abrir o painel:** `python -m streamlit run app.py` · [Estudo de caso](docs/PORTFOLIO.md) · [Metodologia](docs/METODOLOGIA.md)
+Explore pedidos do e-commerce brasileiro, investigue atrasos por estado e período e compare a experiência de quem recebeu no prazo com a de quem recebeu depois. O projeto conecta preparação de dados, consultas SQL, classificação de avaliações e respostas com evidências em uma aplicação interativa.
 
-## Problema e solução
+![Painel de análise da Olist, com filtros e indicadores](docs/images/painel.jpg)
 
-Como explorar a relação entre atrasos de entrega e satisfação sem confundir quantidade de pedidos, número de itens e avaliações repetidas?
+[Estudo de caso](docs/PORTFOLIO.md) · [Metodologia](docs/METODOLOGIA.md) · [Resultados de referência](reports/portfolio/example_results.json)
 
-O painel permite filtrar período e estados, comparar indicadores e consultar suas evidências. Também há um classificador para testar avaliações novas. A consulta local funciona sem API; o modo generativo é uma integração opcional, configurada no servidor.
+## O que o projeto resolve
 
-| Componente | Funcionalidades |
-| --- | --- |
-| Dados e SQL | Junções validadas, um registro por pedido, indicadores e consultas SQL por estado, mês e nota. |
-| Aprendizado de máquina | TF-IDF + regressão logística, inferência de texto novo e comparação com baseline. |
-| Interface | Painel Streamlit com filtros, gráficos, tabelas e exportação dos indicadores. |
-| Consulta local | Respostas por regras com referências aos números calculados. Não utiliza LLM. |
-| IA generativa opcional | Responses API da OpenAI para redigir respostas com agregados e instruções documentadas. Requer chave e modelo. |
+Um pedido pode conter vários itens e receber mais de uma avaliação. Unir essas tabelas sem os cuidados adequados pode multiplicar registros e distorcer os indicadores. A preparação mantém **um registro por pedido**, agrega os itens antes da junção e seleciona uma avaliação representativa.
+
+O resultado é um painel para explorar volume, atraso, notas e valor dos itens, com critérios de cálculo e denominadores explícitos.
 
 ## Instalação e execução
 
-Use **Python 3.12**, na raiz do repositório. As versões diretas testadas estão fixadas em requirements.txt; dependências transitivas podem variar.
-
-```bash
-python -m venv .venv
-```
-
-Ative o ambiente:
+Na raiz do projeto, crie um ambiente e instale as dependências. No Windows:
 
 ```powershell
-# Windows PowerShell
-.\.venv\Scripts\Activate.ps1
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.port 8503 --server.showEmailPrompt false
 ```
+
+Abra `http://127.0.0.1:8503`. O painel e a consulta local funcionam sem chave de API. O classificador pode ser treinado pela interface ou pelo comando descrito na seção de avaliação.
+
+O projeto foi testado em Python 3.12 e a interface também foi executada localmente com Python 3.14. Em Linux/macOS:
 
 ```bash
-# Linux/macOS
-source .venv/bin/activate
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m streamlit run app.py --server.port 8503 --server.showEmailPrompt false
 ```
 
-```bash
-python -m pip install -r requirements.txt
-python -m olist_insights --train
-python -m streamlit run app.py
-```
+### Dados necessários
 
-Abra a URL local mostrada pelo Streamlit. O comando com --train gera reports/portfolio/results.json e models/reviews.joblib. O classificador também pode ser treinado pelo painel, sem usar uma API.
+Os CSVs da base pública estão em `data/raw/`. Para executar o painel, são usados:
 
-### Dados
+| Arquivo | Uso |
+|---|---|
+| `olist_orders_dataset.csv` | Pedidos, situação e datas de compra/entrega |
+| `olist_customers_dataset.csv` | Estado do cliente |
+| `olist_order_items_dataset.csv` | Agregação do valor dos itens |
+| `olist_order_reviews_dataset.csv` | Notas e textos das avaliações |
 
-Fonte: [Brazilian E-Commerce Public Dataset by Olist, no Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). Os CSVs já presentes no projeto ficam em data/raw/. Para o painel são necessários:
+Fonte: [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). São dados históricos públicos; os termos de uso estão na página da base.
 
-- olist_orders_dataset.csv
-- olist_customers_dataset.csv
-- olist_order_items_dataset.csv
-- olist_order_reviews_dataset.csv
+## Fluxo de análise
 
-Consulte os termos e a licença na página da fonte antes de redistribuir ou usar os dados para outra finalidade. São dados históricos, sem conexão com a operação atual da Olist ou de outras empresas.
+1. **Defina o recorte:** escolha o período de compra e os estados nos filtros do topo.
+2. **Investigue a operação:** em **Operação**, compare volume mensal, atrasos por estado e notas de entregas no prazo e atrasadas.
+3. **Pergunte aos dados:** consulte indicadores como taxa de atraso, estado com mais atrasos ou mês com maior volume. As respostas locais citam as evidências M1–M4.
+4. **Confira a origem:** abra as evidências da resposta ou exporte os indicadores por estado em CSV.
+5. **Teste o classificador:** treine o modelo e informe uma avaliação para estimar a classe positiva ou negativa.
 
-## Usar o painel
+Os filtros alteram os indicadores e as evidências da consulta. O treinamento do classificador usa a base histórica completa de avaliações. A seção **Como foi construído** apresenta o fluxo de preparação, análise e modelagem.
 
-1. Em **Visão dos pedidos**, filtre as compras e compare atraso, nota e volume. Valor dos itens exclui frete e não equivale a lucro.
-2. Em **Pergunte aos dados**, consulte “Qual é a taxa de atraso?”, “Qual estado tem mais atrasos?” ou “Qual estado tem a maior taxa de atraso?”. Quantidade e taxa usam critérios distintos.
-3. Abra **Ver evidências da resposta** para conferir os indicadores M1–M4. Os filtros alteram as evidências.
-4. Em **Teste o classificador**, escreva uma avaliação nova e compare a previsão com as limitações do modelo.
+## O que está implementado
 
-### Modo generativo (opcional)
+| Recurso | Comportamento |
+|---|---|
+| Preparação de dados | Junções validadas, itens agregados e uma avaliação por pedido |
+| Análise em SQL | Indicadores por estado, mês e situação da entrega |
+| Painel interativo | Tema escuro, filtros no topo, gráficos, tabelas e exportação |
+| Consulta local | Respostas por regras com referências aos agregados calculados |
+| Classificação de avaliações | TF-IDF + regressão logística, comparação com baseline e inferência |
+| Integração generativa opcional | Redação de respostas a partir dos mesmos indicadores agregados |
+| Execução em lote | Relatório JSON de evidências e treino opcional pelo terminal |
 
-Configure OPENAI_API_KEY pelo gerenciador de segredos do ambiente e OPENAI_MODEL com o nome exato de um modelo disponível na sua conta. **Não publique chaves no código, no GitHub ou no chat.** O app lê variáveis do ambiente; não carrega .env automaticamente.
+## Resultados verificáveis
 
-```powershell
-# Depois de configurar OPENAI_API_KEY no ambiente:
-$env:OPENAI_MODEL = 'nome-do-modelo-na-sua-conta'
-python -m streamlit run app.py
-```
+O [relatório de referência](reports/portfolio/example_results.json) registra os resultados abaixo para a base completa.
 
-No painel, selecione **IA generativa (OpenAI)** e confirme o envio da pergunta e dos agregados. A chamada pode consumir créditos da API. O cliente envia store=False e não transmite identificadores, comentários de clientes ou os CSVs. Isso não implica ausência de toda retenção pelo provedor. Consulte o [prompt e seus limites](docs/PROMPTS.md).
-
-**Validação:** painel, consulta local e classificador executados com os dados do repositório. A integração generativa é coberta por testes de contrato com cliente simulado; a avaliação com um modelo externo depende da configuração de credenciais e de testes específicos, descritos na [documentação do assistente](docs/PROMPTS.md).
-
-## Avaliação reproduzível
-
-Uma execução em 27/10/2026, em Python 3.12, produziu:
+### Operação
 
 | Indicador | Resultado |
-| --- | ---: |
-| Pedidos únicos | 99.441 |
-| Entregas válidas para atraso | 96.470 |
-| Entregas após o dia previsto | 6.534 (6,7731%) |
-| Textos únicos usados no classificador | 30.475 |
+|---|---:|
+| Pedidos únicos | **99.441** |
+| Entregas válidas para o cálculo de atraso | 96.470 |
+| Entregas após o dia previsto | 6.534 |
+| Taxa de atraso | 6,7731% |
+| Nota média | 4,0864 / 5 |
+
+O atraso compara os dias de calendário da entrega e da previsão. Registros sem datas válidas ficam fora desse denominador. A associação entre atraso e nota não estabelece causalidade. O valor dos itens exibido no painel exclui frete e não representa lucro.
+
+### Classificador
+
+| Critério | Resultado no teste |
+|---|---:|
+| Textos únicos utilizados | 30.475 |
+| Textos no treino | 24.380 |
 | Textos no teste | 6.095 |
-| Acurácia no teste | 0,9229 |
-| F1 macro no teste | 0,9152 |
-| F1 macro do baseline majoritário | 0,4004 |
+| Acurácia | 0,9229 |
+| F1 macro | **0,9152** |
+| F1 macro da classe majoritária | 0,4004 |
 
-Textos normalizados são deduplicados **antes** da divisão treino/teste. Textos idênticos com rótulos conflitantes são excluídos; o vocabulário TF-IDF é aprendido somente no treino. O teste usa separação aleatória estratificada com semente 42 e não valida generalização temporal ou desempenho em produção.
+Notas 1–2 representam a classe negativa; 4–5, a positiva. A nota 3 fica fora do treinamento. Textos normalizados são deduplicados antes da divisão; textos idênticos com rótulos conflitantes são excluídos. O vocabulário TF-IDF é aprendido somente no treino.
 
-Os números podem diferir dos scripts originais: atraso agora usa o dia previsto, há uma avaliação por pedido e o modelo tem um protocolo próprio de deduplicação. Não compare métricas de protocolos distintos como se fossem uma melhoria direta. Veja a [metodologia](docs/METODOLOGIA.md) e a [execução de exemplo](reports/portfolio/example_results.json).
+A avaliação usa divisão aleatória estratificada com semente 42. Os resultados descrevem esse protocolo em dados históricos; não validam generalização temporal ou desempenho em uma operação real. Os critérios estão detalhados na [metodologia](docs/METODOLOGIA.md).
 
-```bash
-python -m pip install -r requirements-dev.txt
-python -m pytest -q
+### Reproduzir o relatório e treinar
+
+Com o ambiente instalado, os comandos abaixo são executados na raiz do projeto:
+
+```powershell
+.\.venv\Scripts\python.exe -m olist_insights
+.\.venv\Scripts\python.exe -m olist_insights --train
 ```
 
-Os testes cobrem datas, junções, denominadores, filtros vazios, respostas locais, contrato da API e inferência do classificador. A CI executa os testes sem chave de API.
+O primeiro gera `reports/portfolio/results.json` com as evidências. O segundo também treina e avalia o classificador e salva `models/reviews.joblib`. O diretório do modelo é criado pelo treinamento e fica fora do Git.
 
-## Estrutura
+## Consulta com IA opcional
 
-```text
-app.py                   # Interface Streamlit
-olist_insights/
-  analytics.py           # Preparação, indicadores e SQL fixo
-  assistant.py           # Consulta local e integração generativa
-  sentiment.py           # Treino, avaliação e inferência
-  __main__.py            # Relatório reexecutável e treino opcional
-tests/                   # Testes de dados, consultas, modelo e painel
-docs/                    # Estudo de caso, metodologia e prompts
-src/                     # Scripts acadêmicos originais de NLP/modelo
-notebooks/               # Análise exploratória original
-reports/                 # Gráficos originais e relatório demonstrativo
-data/raw/                # Dataset público
+A consulta local já responde às perguntas suportadas usando regras e SQL fixo. Para habilitar a redação generativa, configure `OPENAI_API_KEY` e `OPENAI_MODEL` no ambiente do servidor:
+
+```powershell
+$env:OPENAI_API_KEY = "sua-chave"
+$env:OPENAI_MODEL = "modelo-disponivel-na-sua-conta"
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.port 8503 --server.showEmailPrompt false
 ```
 
-## Sobre o projeto
+Selecione **IA generativa (OpenAI)** e autorize o envio da pergunta e dos indicadores agregados. O aplicativo não carrega `.env` automaticamente. Mantenha a chave fora do repositório.
 
-O projeto surgiu na disciplina Projeto Aplicado II do curso de Ciência de Dados e evoluiu para uma aplicação interativa de análise de e-commerce. Reúne preparação de dados, consultas SQL, classificação de avaliações, respostas com evidências e testes automatizados, com apoio de IA no desenvolvimento.
+São enviados a pergunta e os agregados; comentários de clientes, identificadores e CSVs não são transmitidos. A integração usa `store=False`. As chamadas podem consumir créditos da API, e as evidências continuam disponíveis para conferir o texto produzido. Consulte o [funcionamento do assistente](docs/PROMPTS.md).
 
-O [estudo de caso](docs/PORTFOLIO.md) apresenta o problema, as decisões de implementação e os resultados. A [metodologia](docs/METODOLOGIA.md) documenta os critérios de cálculo e de avaliação dos modelos.
+A integração generativa é testada com cliente simulado. Os resultados do classificador e da análise não medem a qualidade de um LLM externo.
+
+## Testes
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+**24 testes** cobrem preparação dos dados, junções, datas, denominadores, filtros, respostas locais, contrato da integração generativa, classificação de avaliações e navegação do painel. O fluxo de testes no GitHub está em [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    A[CSVs públicos da Olist] --> B[Preparação e validação]
+    B --> C[Indicadores Python e SQL]
+    C --> D[Painel de análise]
+    C --> E[Consulta com evidências]
+    E --> F[Redação generativa opcional]
+    A --> G[Preparação dos textos]
+    G --> H[TF-IDF e regressão logística]
+    H --> I[Classificação de novas avaliações]
+```
+
+| Caminho | Responsabilidade |
+|---|---|
+| `app.py` | Interface, filtros, gráficos, consultas e teste do classificador |
+| `olist_insights/analytics.py` | Preparação dos pedidos, indicadores e consultas SQL |
+| `olist_insights/assistant.py` | Consulta local e integração generativa |
+| `olist_insights/sentiment.py` | Treinamento, avaliação e inferência |
+| `olist_insights/__main__.py` | Relatório reexecutável e treinamento opcional |
+| `tests/` | Verificação dos dados, modelo, respostas e interface |
+| `src/` e `notebooks/` | Scripts e análises acadêmicas originais |
+
+## Documentação e contexto
+
+- [Estudo de caso: problema, decisões e resultados](docs/PORTFOLIO.md)
+- [Metodologia dos indicadores e da classificação](docs/METODOLOGIA.md)
+- [Consulta local e integração generativa](docs/PROMPTS.md)
+- [Relatório de referência](reports/portfolio/example_results.json)
+
+Projeto de origem acadêmica, desenvolvido com apoio de IA e dados públicos históricos. O painel permite explorar os critérios de cálculo e reproduzir os resultados. O tempo da execução em lote é medido na máquina utilizada; economia de horas de trabalho não foi medida.
