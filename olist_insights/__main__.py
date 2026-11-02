@@ -10,6 +10,13 @@ from .analytics import build_evidence, load_orders
 
 
 def main():
+    """Lê argumentos, calcula evidências e grava results.json no destino indicado.
+
+    --train também treina, avalia e grava o classificador. Os caminhos de
+    dados, saída e modelo podem ser substituídos por argumentos. A execução
+    imprime sua duração; essa medição não estima economia de trabalho humano.
+    Falhas de leitura, validação ou gravação são propagadas ao terminal.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--output-dir", type=Path, default=Path("reports/portfolio"))

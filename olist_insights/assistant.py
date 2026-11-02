@@ -21,20 +21,37 @@ Responda em até 250 palavras, com conclusão e evidências."""
 
 @dataclass
 class Answer:
+    """Resposta de consulta com texto, modo de execução e evidências agregadas."""
     text: str
     mode: str
     evidence: dict
 
 
 def normalize(text):
+    """Padroniza caixa e remove marcas de acento para comparar termos das perguntas."""
     return "".join(c for c in unicodedata.normalize("NFKD", text.casefold()) if not unicodedata.combining(c))
 
 
 def number(value, digits=2):
+    """Formata número com separadores brasileiros; None produz a expressão sem dados."""
     return "sem dados" if value is None else f"{value:,.{digits}f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
 def local_answer(question, evidence):
+    """Seleciona uma resposta por termos da pergunta e evidências já calculadas.
+
+    Args:
+        question: Pergunta textual; a comparação ignora caixa e acentos.
+        evidence: Agregados M1–M4 e regras produzidos por build_evidence.
+
+    Returns:
+        Texto em português com referência M1, M2, M3 ou M4 quando aplicável.
+        Perguntas fora das regras recebem uma mensagem de limitação da base.
+
+    Para taxas estaduais, exige ao menos vinte entregas válidas; para
+    quantidade de atrasos, uma. A ordem das regras define a preferência
+    quando uma pergunta combina vários assuntos. Não usa LLM.
+    """
     query = normalize(question)
     metrics = evidence["M1"]["dados"]
     if not metrics["pedidos"]:
@@ -77,6 +94,26 @@ def local_answer(question, evidence):
 
 
 def answer_question(question, frame, use_llm=False, client=None, model=None):
+    """Calcula evidências do recorte e responde localmente ou via provedor.
+
+    Args:
+        question: Pergunta de até 1.500 caracteres após remover espaços externos.
+        frame: Pedidos preparados no recorte escolhido pelo usuário.
+        use_llm: False usa regras locais; True envia pergunta e agregados.
+        client: Cliente compatível com responses.create, útil para testes.
+        model: Nome do modelo; usa OPENAI_MODEL quando não informado.
+
+    Returns:
+        Answer com texto, modo e os mesmos agregados usados na consulta.
+
+    Raises:
+        ValueError: Pergunta inválida, configuração ausente ou resposta vazia.
+
+    Sem cliente injetado, o modo externo exige OPENAI_API_KEY. Erros do
+    provedor são propagados para a interface tratar. A autorização de envio
+    pertence à interface chamadora. O payload não contém comentários ou IDs
+    de clientes. As referências do texto generativo não são validadas aqui.
+    """
     question = question.strip()
     if not question or len(question) > 1500:
         raise ValueError("Escreva uma pergunta de 1 a 1.500 caracteres.")

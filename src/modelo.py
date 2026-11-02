@@ -1,3 +1,9 @@
+"""Treinamento acadêmico original a partir da base textual processada.
+
+A execução lê o CSV tratado, divide treino/teste, ajusta TF-IDF e regressão
+logística e exibe/grava gráficos. Executa no nível do módulo. Os resultados
+deste protocolo não devem ser confundidos com os do pacote olist_insights.
+"""
 from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd

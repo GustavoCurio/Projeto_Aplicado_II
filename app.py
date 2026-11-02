@@ -32,6 +32,7 @@ div[data-testid="stRadio"] [role="radiogroup"]{gap:25px}
 
 @st.cache_data(show_spinner=False)
 def cached_orders():
+    """Carrega a base histórica uma vez por cache do Streamlit e propaga erros de leitura."""
     return load_orders(DATA_DIR)
 
 

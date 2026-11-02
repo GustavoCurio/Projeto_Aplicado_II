@@ -1,3 +1,8 @@
+"""Análise exploratória acadêmica original do dataset público da Olist.
+
+Executa leitura, preparação e visualizações no nível do módulo. O painel
+interativo e seus critérios atuais estão implementados em olist_insights.
+"""
 from pathlib import Path
 
 import pandas as pd

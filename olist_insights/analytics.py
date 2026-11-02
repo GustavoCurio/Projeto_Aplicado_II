@@ -30,7 +30,20 @@ QUERIES = {
 
 
 def load_orders(data_dir: str | Path) -> pd.DataFrame:
-    """Carrega só as colunas usadas e evita multiplicar pedidos em junções."""
+    """Carrega as quatro tabelas necessárias e prepara um registro por pedido.
+
+    Args:
+        data_dir: Pasta com os CSVs de pedidos, clientes, itens e avaliações.
+
+    Returns:
+        DataFrame preparado por prepare_orders, com indicadores de entrega.
+
+    Raises:
+        FileNotFoundError: Um dos quatro CSVs obrigatórios não existe.
+        ValueError: Os pedidos têm chaves inválidas ou uma junção é inconsistente.
+
+    Lê apenas as colunas utilizadas. Erros de leitura dos CSVs são propagados.
+    """
     directory = Path(data_dir)
     files = {
         "orders": ("olist_orders_dataset.csv", ["order_id", "customer_id", "order_status", *DATE_COLUMNS]),
@@ -47,10 +60,26 @@ def load_orders(data_dir: str | Path) -> pd.DataFrame:
 
 
 def prepare_orders(orders, customers, items, reviews) -> pd.DataFrame:
-    """Escolhe a avaliação respondida mais recentemente por pedido.
+    """Une as tabelas preservando o grão de um pedido e define a entrega válida.
 
-    Empates são resolvidos por review_id. Valor de itens exclui frete e não é
-    receita reconhecida. Entrega é comparada por dia de calendário.
+    Args:
+        orders: Pedidos com order_id único, customer_id, situação e datas.
+        customers: Cadastro com customer_id e customer_state.
+        items: Itens com order_id, price e freight_value.
+        reviews: Avaliações com pedido, nota, data de resposta e review_id.
+
+    Returns:
+        Nova tabela com valores agregados, nota, delivery_eligible, late e
+        delivery_days. Os DataFrames recebidos não são alterados.
+
+    Raises:
+        ValueError: order_id está vazio/repetido ou a cardinalidade da junção
+            não corresponde às validações many_to_one e one_to_one.
+
+    Itens são somados antes das junções. A avaliação de resposta mais recente
+    representa o pedido; review_id desempata. O atraso compara dias de
+    calendário somente em pedidos entregues com datas cronologicamente válidas.
+    Valor dos itens não inclui frete nem representa receita reconhecida.
     """
     frame = orders.copy()
     if frame["order_id"].isna().any() or frame["order_id"].duplicated().any():
@@ -67,6 +96,7 @@ def prepare_orders(orders, customers, items, reviews) -> pd.DataFrame:
     items = items.copy()
     for column in ["price", "freight_value"]:
         items[column] = pd.to_numeric(items[column], errors="coerce")
+    # Somar no grão do pedido evita multiplicar notas e contagens na junção.
     totals = items.groupby("order_id")[["price", "freight_value"]].sum(min_count=1).reset_index()
     frame = frame.merge(customers, on="customer_id", how="left", validate="many_to_one")
     frame = frame.merge(totals, on="order_id", how="left", validate="one_to_one")
@@ -80,12 +110,24 @@ def prepare_orders(orders, customers, items, reviews) -> pd.DataFrame:
         & estimated.notna() & purchased.notna()
         & delivered.ge(purchased) & estimated.ge(purchased)
     )
+    # A ausência de datas válidas é desconhecida, não uma entrega pontual.
     frame["late"] = delivered.gt(estimated).astype("boolean").where(frame["delivery_eligible"])
     frame["delivery_days"] = (delivered - purchased).dt.days.where(frame["delivery_eligible"])
     return frame
 
 
 def filter_orders(frame, start=None, end=None, states=None):
+    """Retorna uma cópia filtrada por dias de compra e estados.
+
+    Args:
+        frame: Tabela preparada, com timestamp de compra em formato datetime.
+        start: Primeiro dia incluído; None não limita o início.
+        end: Último dia incluído, independentemente da hora; None não limita.
+        states: Estados aceitos; None aceita todos e lista vazia não aceita nenhum.
+
+    Returns:
+        DataFrame independente, mantendo as colunas da tabela original.
+    """
     selected = frame.copy()
     purchased = selected["order_purchase_timestamp"].dt.normalize()
     if start is not None:
@@ -98,10 +140,24 @@ def filter_orders(frame, start=None, end=None, states=None):
 
 
 def optional_number(value):
+    """Converte número em float com quatro casas; ausências viram None para JSON."""
     return None if pd.isna(value) else round(float(value), 4)
 
 
 def summarize(frame):
+    """Calcula indicadores e denominadores do recorte já preparado.
+
+    Args:
+        frame: Pedidos produzidos por prepare_orders, possivelmente filtrados.
+
+    Returns:
+        Dicionário com contagens, atraso, notas, valor dos itens e período.
+        Indicadores indisponíveis recebem None, não zero. O denominador do
+        atraso usa delivery_eligible; a nota usa avaliações não nulas.
+
+    Aceita recorte vazio. O valor dos itens exclui frete, e seu ticket médio
+    considera os pedidos que possuem valor de itens.
+    """
     eligible = frame.loc[frame["delivery_eligible"]]
     late_count = int(eligible["late"].fillna(False).sum())
     period = frame["order_purchase_timestamp"]
@@ -123,7 +179,18 @@ def summarize(frame):
 
 
 def query_tables(frame):
-    """SQL fixo; nenhuma pergunta ou saída do LLM é executada como código."""
+    """Executa consultas fixas por estado, mês e situação da entrega.
+
+    Args:
+        frame: Pedidos preparados com estado, data, elegibilidade, atraso e nota.
+
+    Returns:
+        Dicionário com DataFrames states, monthly e satisfaction.
+
+    Uma tabela temporária é criada no SQLite em memória. A pergunta do usuário
+    e as saídas do LLM não são interpretadas como SQL. Entregas inválidas não
+    entram no denominador de atraso das consultas.
+    """
     columns = ["customer_state", "order_purchase_timestamp", "delivery_eligible", "late", "review_score"]
     export = frame[columns].copy()
     export["order_purchase_timestamp"] = export["order_purchase_timestamp"].dt.strftime("%Y-%m-%d")
@@ -134,6 +201,18 @@ def query_tables(frame):
 
 
 def build_evidence(frame):
+    """Reúne agregados rastreáveis M1–M4 e seus critérios de interpretação.
+
+    Args:
+        frame: Pedidos preparados no recorte que será consultado.
+
+    Returns:
+        Dicionário serializável com métricas globais (M1), estados (M2),
+        meses (M3), entrega versus nota (M4) e regras de cálculo.
+
+    As mesmas evidências alimentam as respostas locais e generativas. Não
+    inclui textos de avaliações ou identificadores individuais de clientes.
+    """
     metrics = summarize(frame)
     tables = query_tables(frame)
     return {
@@ -153,5 +232,6 @@ def build_evidence(frame):
 
 def records(frame):
     # JSON puro, sem NaN/NA, inclusive quando um grupo não tem entregas válidas.
+    """Converte um DataFrame em registros JSON, substituindo NaN/NA por null."""
     import json
     return json.loads(frame.to_json(orient="records", force_ascii=False))

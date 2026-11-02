@@ -1,3 +1,9 @@
+"""Pré-processamento acadêmico original das avaliações textuais.
+
+Ao executar ou importar este script, os CSVs são lidos, os comentários são
+tratados e a base processada é gravada. O painel utiliza o fluxo separado
+em olist_insights/sentiment.py, com protocolo próprio de deduplicação.
+"""
 from pathlib import Path
 import re
 
@@ -78,6 +84,11 @@ avaliacoes_texto = avaliacoes_texto[
 
 def criar_classe(nota):
 
+    """Mapeia nota >= 4 para positiva; as demais notas recebidas viram negativas.
+
+    O script filtra as notas antes de aplicar esta função. Ela não valida a
+    faixa nem exclui nota 3 por conta própria.
+    """
     if nota >= 4:
         return "positiva"
 
@@ -97,6 +108,7 @@ avaliacoes_texto["classe"] = (
 def limpar_texto(texto):
 
     # Coloca tudo em minúsculas
+    """Normaliza o texto em minúsculas, preservando letras acentuadas, números e espaços."""
     texto = texto.lower()
 
     # Remove pontuação e caracteres especiais
@@ -145,6 +157,7 @@ stop_words = (
 
 def remover_stopwords(texto):
 
+    """Remove stopwords do conjunto global, que preserva as negações não e nem."""
     palavras = texto.split()
 
     palavras_filtradas = [
